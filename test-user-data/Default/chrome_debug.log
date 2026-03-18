@@ -1,0 +1,2 @@
+[0115/234137.398:INFO:CONSOLE:0] "The resource https://app-iota-five-61.vercel.app/_next/image?url=%2Fmanhub_logo.png&w=128&q=75 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.", source: https://app-iota-five-61.vercel.app/ (0)
+[0115/234137.818:INFO:CONSOLE:1] "Subscription failed: [object DOMException]", source: https://app-iota-five-61.vercel.app/_next/static/chunks/a539f752da0e75e5.js (1)

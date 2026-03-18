@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a1120;
+  --foreground: #f4ece0;
+  --accent-gold: #c9a227;
+  --accent-gold-light: #e6c15c;
+  --accent-gold-dark: #a6841d;
+  --navy-dark: #050b1a;
+  --navy-medium: #10192d;
+  --navy-light: #162440;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(201, 162, 39, 0.15);
 }
 
 @theme inline {
@@ -12,15 +20,77 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201, 162, 39, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
+}
+
+.text-gold {
+  color: var(--accent-gold);
+  text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-gold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(201, 162, 39, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 39, 0);
+  }
+}
+
+.pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+.premium-border {
+  border: 1px solid transparent;
+  background-image: linear-gradient(var(--navy-dark), var(--navy-dark)),
+    linear-gradient(135deg, var(--accent-gold) 0%, transparent 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
 }
