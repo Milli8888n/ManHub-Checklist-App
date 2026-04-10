@@ -44,24 +44,16 @@ export async function GET(req: Request) {
         console.log(`Checking schedules for time: ${currentTimeStr} (VN)`);
 
         const schedules = [
-            // Ca 3 (Barista, Le Tan) - Start 07:30
-            { target: '07:35', depts: ['barista', 'reception'], title: '⏰ Bắt đầu Ca 3', body: 'Chào buổi sáng! Hãy kiểm tra checklist đầu ca ngay.' },
-            // Ca 1 (Barber, Spa) - Start 08:30
-            { target: '08:35', depts: ['barber', 'spa'], title: '⏰ Bắt đầu Ca 1', body: 'Chúc một ngày tốt lành! Đừng quên checklist đầu ca nhé.' },
-            // Ca 2 (Barber, Spa) - Start 11:30
-            { target: '11:35', depts: ['barber', 'spa'], title: '⏰ Bắt đầu Ca 2', body: 'Ca trưa đã đến! Kiểm tra công việc đầu ca nào.' },
-            // Ca 4 (Barista, Le Tan) - Start 13:00
-            { target: '13:05', depts: ['barista', 'reception'], title: '⏰ Bắt đầu Ca 4', body: 'Ca chiều vui vẻ! Hãy hoàn thành checklist đầu ca.' },
+            // Ca 1 (Barber) - Start 08:30
+            { target: '08:35', depts: ['barber'], title: '⏰ Bắt đầu Ca 1', body: 'Chúc một ngày tốt lành! Đừng quên checklist đầu ca nhé.' },
+            // Ca 2 (Barber) - Start 11:30
+            { target: '11:35', depts: ['barber'], title: '⏰ Bắt đầu Ca 2', body: 'Ca trưa đã đến! Kiểm tra công việc đầu ca nào.' },
 
             // End Shifts
-            // Ca 3 End 16:30 -> Remind at 16:00
-            { target: '16:00', depts: ['barista', 'reception'], title: '🧹 Sắp hết Ca 3', body: 'Còn 30p nữa hết ca. Hãy vệ sinh và bàn giao khu vực.' },
             // Ca 1 End 17:30 -> Remind at 17:00
-            { target: '17:00', depts: ['barber', 'spa'], title: '🧹 Sắp hết Ca 1', body: 'Sắp hết ca rồi. Nhớ dọn dẹp và check-out nhé.' },
+            { target: '17:00', depts: ['barber'], title: '🧹 Sắp hết Ca 1', body: 'Sắp hết ca rồi. Nhớ dọn dẹp và check-out nhé.' },
             // Ca 2 End 20:30 -> Remind at 20:00
-            { target: '20:00', depts: ['barber', 'spa'], title: '🧹 Sắp hết Ca 2', body: '30p nữa là về. Hãy hoàn tất công việc cuối ngày.' },
-            // Ca 4 End 22:00 -> Remind at 21:30
-            { target: '21:30', depts: ['barista', 'reception'], title: '🧹 Sắp hết Ca 4', body: 'Cuối ngày rồi! Vệ sinh sạch sẽ trước khi về nhé.' },
+            { target: '20:00', depts: ['barber'], title: '🧹 Sắp hết Ca 2', body: '30p nữa là về. Hãy hoàn tất công việc cuối ngày.' },
         ];
 
         const notificationsToSend: any[] = [];
@@ -127,10 +119,8 @@ export async function GET(req: Request) {
 
         // --- RED ALERT Logic (Monitoring) ---
         const lateChecks = [
-            { target: '09:00', depts: ['reception', 'barista'], label: 'Ca 3 (Sáng)' },
-            { target: '10:00', depts: ['barber', 'spa'], label: 'Ca 1 (Sáng)' },
-            { target: '14:30', depts: ['reception', 'barista', 'barber', 'spa'], label: 'Ca Đầu Chiều' },
-            { target: '22:15', depts: ['reception', 'barista'], label: 'Ca 4 (Tối)' }
+            { target: '10:00', depts: ['barber'], label: 'Ca 1 (Sáng)' },
+            { target: '14:30', depts: ['barber'], label: 'Ca Đầu Chiều' }
         ];
 
         for (const check of lateChecks) {

@@ -1,5 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'path';
 
 export default defineConfig({
     testDir: './tests',
@@ -9,11 +8,17 @@ export default defineConfig({
     workers: 1,
     reporter: [['list'], ['html', { open: 'never' }]],
     use: {
-        baseURL: 'https://app-iota-five-61.vercel.app',
+        baseURL: 'http://localhost:3000',
         trace: 'on-first-retry',
         screenshot: 'on',
         video: 'on',
-        permissions: ['notifications'], // Auto-grant notification permission
+        permissions: ['notifications'],
+    },
+    webServer: {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: true, // Reuse if already running
+        timeout: 60000,
     },
     projects: [
         {

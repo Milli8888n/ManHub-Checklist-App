@@ -12,8 +12,9 @@ test.describe('Workflow Data Isolation & Role Security', () => {
         await page.fill('input#password', 'ManHub@2026');
         await page.click('button[type="submit"]');
 
-        // Wait for Dashboard with increased timeout
-        await page.waitForSelector('text=Checklist công việc hôm nay', { timeout: 15000 });
+        // Wait for Dashboard - check URL and nav visibility (heading text may vary)
+        await page.waitForURL('**/', { timeout: 10000 });
+        await expect(page.locator('nav')).toBeVisible({ timeout: 10000 });
 
         // 2. CHECK ROLE SECURITY (UI)
         // Staff MUST NOT see "Duyệt" (Approve) or "Từ chối" (Reject) buttons

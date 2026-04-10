@@ -4,7 +4,7 @@ import path from 'path';
 test.describe('ManHub Workflow E2E', () => {
 
     test('Staff Submit -> Admin Approve Flow', async ({ page }) => {
-        test.setTimeout(90000); // 90s timeout
+        test.setTimeout(60000); // 60s timeout
 
         // Debug Browser Logs
         page.on('console', msg => {
@@ -21,8 +21,8 @@ test.describe('ManHub Workflow E2E', () => {
         await page.click('button[type="submit"]');
 
         // Verify Dashboard
-        await expect(page.getByText('Checklist công việc hôm nay')).toBeVisible();
-        await expect(page.getByText('Đoàn Quốc Vương')).toBeVisible();
+        await expect(page.getByText(/Checklist hôm nay/i)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('Nguyễn Hoài Phong').first()).toBeVisible({ timeout: 10000 });
 
         console.log('📸 Step 2: Uploading Photo for Task...');
         // Locate the first file input
@@ -38,7 +38,7 @@ test.describe('ManHub Workflow E2E', () => {
 
         // Wait for "Chờ duyệt" badge to appear
         console.log('⏳ Waiting for "Chờ duyệt" status...');
-        await expect(page.getByText('Chờ duyệt').first()).toBeVisible({ timeout: 30000 });
+        await expect(page.getByText('Chờ duyệt').first()).toBeVisible({ timeout: 15000 });
 
         // Logout
         console.log('👋 Step 3: Logging out...');
@@ -52,12 +52,12 @@ test.describe('ManHub Workflow E2E', () => {
         await page.fill('input#password', 'admin123'); // TRYING NEW PASSWORD
         await page.click('button[type="submit"]');
 
-        await expect(page.getByText('Admin ManHub')).toBeVisible({ timeout: 20000 });
+        await expect(page.getByText('Admin ManHub')).toBeVisible({ timeout: 10000 });
 
         // Reload to ensure fresh data
         console.log('🔄 Reloading page...');
         await page.reload();
-        await expect(page.getByText('Checklist công việc hôm nay')).toBeVisible();
+        await expect(page.getByText('Checklist hôm nay')).toBeVisible();
 
         console.log('✨ Step 5: Approving the Task...');
         const approveBtn = page.locator('button[data-testid^="btn-approve-"]');

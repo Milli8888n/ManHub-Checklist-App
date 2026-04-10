@@ -61,3 +61,17 @@ export function sortBarbers(barbers: BarberStatus[]): BarberStatus[] {
         return a.user_id.localeCompare(b.user_id);
     });
 }
+
+/**
+ * Checks if a shift is currently active based on the business rules:
+ * Ca 1: 08:30 - 17:30
+ * Ca 2: 11:30 - 20:30
+ * Full: 08:30 - 20:30
+ */
+export function isShiftActive(shiftLabel: string, now: Date = new Date()): boolean {
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // Minutes since midnight
+    if (shiftLabel === 'Full') return currentTime >= 510 && currentTime < 1230; // 08:30 - 20:30
+    if (shiftLabel === 'Ca 1') return currentTime >= 510 && currentTime < 1050; // 08:30 - 17:30
+    if (shiftLabel === 'Ca 2') return currentTime >= 690 && currentTime < 1230; // 11:30 - 20:30
+    return false;
+}

@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import { Play, Check, Plus, Trash2, Clock, User, Home, Sparkles, LogOut, Scissors, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import GlobalNav from '../GlobalNav';
+import AppHeader from '../AppHeader';
 
 type BarberStatus = Database['public']['Tables']['barber_status']['Row'];
 type Service = Database['public']['Tables']['services']['Row'];
@@ -17,6 +19,7 @@ export default function BarberInterface() {
     const [services, setServices] = useState<Service[]>([]);
     const [selectedServices, setSelectedServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userRole, setUserRole] = useState<string>('staff');
     const router = useRouter();
 
     useEffect(() => {
@@ -26,6 +29,14 @@ export default function BarberInterface() {
                 setCurrentUser(user);
                 fetchStatus(user.id);
                 fetchServices();
+
+                // Fetch role
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                if (userData) setUserRole(userData.role);
             } else {
                 router.push('/login');
             }
@@ -98,12 +109,33 @@ export default function BarberInterface() {
     const handleFinishService = async () => {
         if (!status || !status.current_session_id) return;
         const now = new Date().toISOString();
-        await supabase.from('service_sessions').update({ status: 'completed', end_time: now }).eq('id', status.current_session_id);
+        const total = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+
+        // 1. Save services to items
+        if (selectedServices.length > 0) {
+            await supabase.from('session_items').insert(
+                selectedServices.map(s => ({
+                    session_id: status.current_session_id!,
+                    service_id: s.id,
+                    price_at_session: s.price
+                }))
+            );
+        }
+
+        // 2. Complete session
+        await supabase.from('service_sessions').update({
+            status: 'completed',
+            end_time: now,
+            total_amount: total
+        }).eq('id', status.current_session_id);
+
+        // 3. Set barber to cooldown
         await supabase.from('barber_status').update({
             state: 'cooldown',
             current_session_id: null,
             last_completed_at: now
         }).eq('user_id', currentUser.id);
+
         setSession(null);
         setSelectedServices([]);
     };
@@ -140,23 +172,18 @@ export default function BarberInterface() {
     );
 
     return (
-        <div className="min-h-screen bg-[#0a1120] text-[#f4ece0] font-sans pb-10 selection:bg-gold/30">
-            {/* Header */}
-            <header className="sticky top-0 z-50 glass border-b border-[#c9a227]/10 px-4 py-3">
+        <div className="min-h-screen bg-[#0a1120] text-[#f4ece0] font-sans pb-20 selection:bg-gold/30">
+            {/* Shared App Header */}
+            <AppHeader />
+
+            {/* Contextual Sub-header */}
+            <div className="px-4 py-3 border-b border-white/5">
                 <div className="max-w-md mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.push('/')}
-                            className="p-2.5 bg-white/5 hover:bg-gold/10 rounded-xl border border-white/5 transition-all active:scale-90"
-                        >
-                            <Home className="w-5 h-5 text-gold" />
-                        </button>
-                        <div>
-                            <h1 className="text-xl font-black tracking-tight leading-none text-gold">CA LÀM VIỆC</h1>
-                            <p className="text-[9px] text-[#8a9bb0] uppercase font-black tracking-widest mt-1.5 opacity-70">
-                                {status?.station_label || 'CHƯA ĐẶT GHẾ'}
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="text-xl font-black tracking-tight leading-none text-gold">CA LÀM VIỆC</h1>
+                        <p className="text-[9px] text-[#8a9bb0] uppercase font-black tracking-widest mt-1.5 opacity-70">
+                            {status?.station_label || 'CHƯA ĐẶT GHẾ'}
+                        </p>
                     </div>
 
                     <button
@@ -169,7 +196,7 @@ export default function BarberInterface() {
                         {status?.state === 'offline' ? 'Bắt đầu ca' : status?.state}
                     </button>
                 </div>
-            </header>
+            </div>
 
             <main className="max-w-md mx-auto p-5 space-y-8">
                 {/* STATUS CARDS */}
@@ -317,13 +344,14 @@ export default function BarberInterface() {
                         </div>
                         <button
                             onClick={() => supabase.auth.signOut().then(() => router.push('/login'))}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-3 rounded-2xl border border-red-500/20 transition-all active:scale-90"
+                            className="bg-red-50/10 hover:bg-red-500/20 text-red-400 p-3 rounded-2xl border border-red-500/20 transition-all active:scale-90"
                         >
                             <LogOut className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
             </main>
+            <GlobalNav activeTab="barber" userRole={userRole} />
         </div>
     );
 }

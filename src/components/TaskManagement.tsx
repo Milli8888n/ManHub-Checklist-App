@@ -41,7 +41,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
     const [formData, setFormData] = useState<Partial<TaskDefinition>>({
         title: '',
         description: '',
-        area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Cafe',
+        area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Barber',
         required_role: userRole === 'leader' && userDepartment ? userDepartment : 'staff',
         is_photo_required: false,
         shift: 'all'
@@ -88,7 +88,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
                 setFormData({
                     title: '',
                     description: '',
-                    area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Cafe',
+                    area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Barber',
                     required_role: userRole === 'leader' && userDepartment ? userDepartment : 'staff',
                     is_photo_required: false,
                     shift: 'all'
@@ -164,10 +164,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
                             >
                                 {userRole === 'admin' ? (
                                     <>
-                                        <option value="Cafe">Cafe</option>
                                         <option value="Barber">Barber</option>
-                                        <option value="Spa">Spa</option>
-                                        <option value="Lễ tân">Lễ tân</option>
                                         <option value="Toilet">Toilet</option>
                                         <option value="Khu vực chung">Khu vực chung</option>
                                     </>
@@ -187,10 +184,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
                                     onChange={e => setFormData({ ...formData, required_role: e.target.value })}
                                 >
                                     <option value="staff">Tất cả</option>
-                                    <option value="barista">Barista</option>
                                     <option value="barber">Barber</option>
-                                    <option value="spa">Spa</option>
-                                    <option value="reception">Lễ tân</option>
                                 </select>
                             </div>
                         )}

@@ -13,7 +13,7 @@ test.describe('ManHub Task Rejection & Retry Workflow', () => {
         await page.click('button[type="submit"]');
 
         // Ensure dashboard loaded
-        await expect(page.getByText('Checklist công việc hôm nay')).toBeVisible();
+        await expect(page.getByText('Checklist hôm nay')).toBeVisible();
 
         // Upload first time
         const fileInput = page.locator('input[type="file"]').first();
@@ -36,7 +36,7 @@ test.describe('ManHub Task Rejection & Retry Workflow', () => {
 
         await expect(page.getByText('Admin ManHub')).toBeVisible();
         await page.reload(); // Fresh data
-        await expect(page.getByText('Checklist công việc hôm nay')).toBeVisible();
+        await expect(page.getByText('Checklist hôm nay')).toBeVisible();
 
         // Setup Dialog Handler for Prompt
         page.once('dialog', async dialog => {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { isShiftActive } from '@/lib/queue-algorithm';
 import { User, Clock, Scissors, Calendar, Sparkles, ChevronRight } from 'lucide-react';
 
 type BarberStatus = Database['public']['Tables']['barber_status']['Row'] & {
@@ -17,6 +18,7 @@ type Booking = Database['public']['Tables']['bookings']['Row'];
 export default function SeatMap() {
     const [barbers, setBarbers] = useState<BarberStatus[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchBarbers();
@@ -30,13 +32,30 @@ export default function SeatMap() {
     }, []);
 
     const fetchBarbers = async () => {
+        const now = new Date();
+        const todayStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+        // 1. Fetch today's schedule
+        const { data: scheduleData } = await supabase
+            .from('work_schedules')
+            .select('user_id, shift')
+            .eq('date', todayStr);
+
+        // 2. Fetch all status
         const { data: barberData } = await supabase
             .from('barber_status')
             .select('*, users(full_name)')
             .order('station_label', { ascending: true });
 
-        if (barberData) {
-            const busyBarberIds = barberData.filter(b => b.current_session_id).map(b => b.current_session_id);
+        if (barberData && scheduleData) {
+            // 3. Filter by shift timing
+            const activeUserIds = scheduleData
+                .filter(s => isShiftActive(s.shift, now))
+                .map(s => s.user_id);
+
+            const filteredData = barberData.filter(b => activeUserIds.includes(b.user_id));
+
+            const busyBarberIds = filteredData.filter(b => b.current_session_id).map(b => b.current_session_id);
             let sessionsMap: any = {};
             if (busyBarberIds.length > 0) {
                 const { data: sessions } = await supabase
@@ -45,12 +64,13 @@ export default function SeatMap() {
                     .in('id', busyBarberIds as string[]);
                 sessions?.forEach(s => sessionsMap[s.id] = s);
             }
-            const enriched = barberData.map((b: any) => ({
+            const enriched = filteredData.map((b: any) => ({
                 ...b,
                 current_session: b.current_session_id ? sessionsMap[b.current_session_id] : null
             }));
             setBarbers(enriched as BarberStatus[]);
         }
+        setLoading(false);
     };
 
     const fetchBookings = async () => {
@@ -104,10 +124,16 @@ export default function SeatMap() {
                 </div>
             </div>
 
-            {barbers.length === 0 ? (
+            {loading ? (
+                <div className="h-64 glass rounded-[2.5rem] flex flex-col items-center justify-center text-[#5a7a9a] border-dashed border-2 border-white/10">
+                    <User className="w-12 h-12 mb-4 opacity-10 animate-pulse" />
+                    <p className="font-bold italic">Đang tải sơ đồ sảnh...</p>
+                </div>
+            ) : barbers.length === 0 ? (
                 <div className="h-64 glass rounded-[2.5rem] flex flex-col items-center justify-center text-[#5a7a9a] border-dashed border-2 border-white/10">
                     <User className="w-12 h-12 mb-4 opacity-10" />
-                    <p className="font-bold italic">Đang tải sơ đồ sảnh...</p>
+                    <p className="font-bold italic">Hiện không có thợ trong ca trực (08:30 - 20:30)</p>
+                    <p className="text-xs mt-2 opacity-50 italic">Lịch ca đã được thiết lập, thợ sẽ hiển thị khi vào ca làm việc.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
