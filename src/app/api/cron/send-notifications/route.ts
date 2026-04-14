@@ -47,8 +47,7 @@ export async function GET(req: Request) {
             // Ca 1 (Barber) - Start 08:30
             { target: '08:35', depts: ['barber'], title: '⏰ Bắt đầu Ca 1', body: 'Chúc một ngày tốt lành! Đừng quên checklist đầu ca nhé.' },
             // Ca 2 (Barber) - Start 11:30
-            { target: '11:45', depts: ['barber'], title: '⏰ Bắt đầu Ca 2', body: 'Ca trưa đã đến! Kiểm tra công việc đầu ca nào.' },
-            { target: '12:38', depts: ['barber'], title: '🧪 TEST CRONJOB', body: 'Đây là thông báo tự động từ hệ thống Cronjob.' },
+            { target: '11:35', depts: ['barber'], title: '⏰ Bắt đầu Ca 2', body: 'Ca trưa đã đến! Kiểm tra công việc đầu ca nào.' },
 
             // End Shifts
             // Ca 1 End 17:30 -> Remind at 17:00
@@ -63,7 +62,7 @@ export async function GET(req: Request) {
 
         schedules.forEach(sch => {
             const targetMinutes = timeToMinutes(sch.target);
-            console.log(`Checking ${sch.title}: ${nowMinutes} vs ${targetMinutes}`);
+            // Window of 30 minutes to be safe with 10-15min cron intervals
             if (nowMinutes >= targetMinutes && nowMinutes < targetMinutes + 30) {
                 console.log(`Matched schedule: ${sch.title} for ${sch.depts}`);
                 notificationsToSend.push(sch);
