@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 
         schedules.forEach(sch => {
             const targetMinutes = timeToMinutes(sch.target);
-            // Window of 30 minutes to be safe with 10-15min cron intervals
+            console.log(`Checking ${sch.title}: ${nowMinutes} vs ${targetMinutes}`);
             if (nowMinutes >= targetMinutes && nowMinutes < targetMinutes + 30) {
                 console.log(`Matched schedule: ${sch.title} for ${sch.depts}`);
                 notificationsToSend.push(sch);
