@@ -163,7 +163,7 @@ export default function Dashboard() {
                 .select('shift')
                 .eq('user_id', user.id)
                 .eq('date', todayStr)
-                .single();
+                .maybeSingle();
                 
             if (schedule) {
                 todayShift = schedule.shift;
