@@ -62,15 +62,27 @@ export default function TaskCard({
 
     const currentStatus = statusConfig[status];
 
-    // Staff: Click to upload photo
-    const handleStaffClick = async () => {
-        if (isUpdating || userRole !== 'staff') return;
-        if (isCompleted) return; // Already approved, can't change
-        if (isSubmitted) return; // Waiting for approval, can't change
+    // Staff/Leader: Click to handle task (upload photo or mark as done)
+    const handleClick = async () => {
+        if (isUpdating) return;
+        
+        // Only staff or leaders can perform tasks
+        const canPerform = userRole === 'staff' || userRole === 'leader';
+        if (!canPerform) return;
+        
+        if (isCompleted || isSubmitted) return;
 
-        // If pending or rejected, open file picker
-        if ((isPending || isRejected) && isPhotoRequired && onUpload) {
-            fileInputRef.current?.click();
+        // Condition 1: Photo is required
+        if (isPhotoRequired) {
+            if (onUpload) {
+                fileInputRef.current?.click();
+            }
+        } 
+        // Condition 2: No photo required, ask for confirmation before submitting
+        else if (onSubmit) {
+            if (window.confirm('Nhiệm vụ này không yêu cầu ảnh. Xác nhận hoàn thành?')) {
+                await onSubmit(id, ''); // Submit with empty photo URL
+            }
         }
     };
 
@@ -105,8 +117,8 @@ export default function TaskCard({
 
     return (
         <div
-            onClick={userRole === 'staff' ? handleStaffClick : undefined}
-            className={`group p-4 md:p-5 rounded-2xl md:rounded-3xl border transition-all relative overflow-hidden ${userRole === 'staff' && (isPending || isRejected) ? 'cursor-pointer active:scale-[0.98]' : ''
+            onClick={(userRole === 'staff' || userRole === 'leader') ? handleClick : undefined}
+            className={`group p-4 md:p-5 rounded-2xl md:rounded-3xl border transition-all relative overflow-hidden ${(userRole === 'staff' || userRole === 'leader') && (isPending || isRejected) ? 'cursor-pointer active:scale-[0.98]' : ''
                 } ${isCompleted
                     ? 'bg-green-500/10 border-green-500/30'
                     : isSubmitted
@@ -132,7 +144,11 @@ export default function TaskCard({
                     <Loader2 className="h-4 w-4 animate-spin text-[#5a7a9a]" />
                 ) : (
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${currentStatus.bg} ${currentStatus.border} border`}>
-                        {isPending && <Camera className="h-3 w-3 text-[#c9a227]" />}
+                        {isPending && (
+                            isPhotoRequired 
+                                ? <Camera className="h-3 w-3 text-[#c9a227]" /> 
+                                : <CheckCircle2 className="h-3 w-3 text-[#5a7a9a]" />
+                        )}
                         {isSubmitted && <Clock className="h-3 w-3 text-amber-400" />}
                         {isCompleted && <CheckCircle2 className="h-3 w-3 text-green-400" />}
                         {isRejected && <XCircle className="h-3 w-3 text-red-400" />}

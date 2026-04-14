@@ -43,7 +43,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
         description: '',
         area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Barber',
         required_role: userRole === 'leader' && userDepartment ? userDepartment : 'staff',
-        is_photo_required: false,
+        is_photo_required: true,
         shift: 'all'
     });
 
@@ -90,7 +90,7 @@ export default function TaskManagement({ userRole, userDepartment }: TaskManagem
                     description: '',
                     area: userRole === 'leader' && userDepartment ? (userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)) : 'Barber',
                     required_role: userRole === 'leader' && userDepartment ? userDepartment : 'staff',
-                    is_photo_required: false,
+                    is_photo_required: true,
                     shift: 'all'
                 });
                 fetchTasks();

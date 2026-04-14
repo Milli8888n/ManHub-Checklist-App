@@ -1,6 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import TaskCard from './TaskCard';
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, beforeEach } from 'vitest';
+
+beforeEach(() => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
+});
 
 test('renders pending task', () => {
     render(
@@ -35,9 +39,8 @@ test('renders completed task with green styles', () => {
     expect(title).toHaveClass('text-green-400');
 });
 
-test('triggers file picker if photo required and pending', () => {
+test('triggers file picker if photo required and pending', async () => {
     const onUpload = vi.fn();
-
     const { container } = render(
         <TaskCard
             id="1"
@@ -52,6 +55,32 @@ test('triggers file picker if photo required and pending', () => {
     );
 
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-    expect(input).toBeInTheDocument();
-    expect(input.accept).toBe('image/*');
+    const clickSpy = vi.spyOn(input, 'click');
+
+    // Click on the card
+    fireEvent.click(screen.getByText(/Clean Table/i).closest('div')!);
+
+    expect(clickSpy).toHaveBeenCalled();
+});
+
+test('submits task directly if NO photo required and confirmed', async () => {
+    const onSubmit = vi.fn();
+    render(
+        <TaskCard
+            id="2"
+            title="Simple Task"
+            description="No photo needed"
+            status="pending"
+            isPhotoRequired={false}
+            area="Cafe"
+            userRole="staff"
+            onSubmit={onSubmit}
+        />
+    );
+
+    // Click on the card
+    fireEvent.click(screen.getByText(/Simple Task/i).closest('div')!);
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalledWith('2', '');
 });
