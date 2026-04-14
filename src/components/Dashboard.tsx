@@ -65,55 +65,6 @@ export default function Dashboard() {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const router = useRouter();
 
-    const urlBase64ToUint8Array = (base64String: string) => {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    };
-
-    const subscribeToPush = async () => {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            alert('Trình duyệt của bạn không hỗ trợ thông báo!');
-            return;
-        }
-
-        try {
-            if (Notification.permission === 'denied') {
-                alert('Bạn đã chặn thông báo trên trình duyệt. Vui lòng vào Cài đặt trình duyệt để cho phép và thử lại!');
-                return;
-            }
-
-            const registration = await navigator.serviceWorker.ready;
-            const sub = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.trim())
-            });
-
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                await supabase.from('push_subscriptions').upsert({
-                    user_id: user.id,
-                    subscription: sub,
-                    user_agent: navigator.userAgent
-                }, { onConflict: 'user_id, user_agent' });
-            }
-
-            setIsSubscribed(true);
-            alert('Đã bật thông báo thành công!');
-        } catch (error) {
-            console.error('Subscription failed:', error);
-            alert('Không thể bật thông báo. Nếu bạn dùng iPhone, hãy chắc chắn đã "Thêm vào màn hình chính" (Add to Home Screen) trước khi cài đặt!');
-        }
-    };
 
     useEffect(() => {
         if ('serviceWorker' in navigator) {

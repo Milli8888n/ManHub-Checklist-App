@@ -59,29 +59,67 @@ export default function AppHeader() {
             alert('Trình duyệt của bạn không hỗ trợ thông báo!');
             return;
         }
+
         try {
-            if (Notification.permission === 'denied') {
-                alert('Bạn đã chặn thông báo. Vui lòng vào Cài đặt trình duyệt để cho phép!');
+            const status = await Notification.requestPermission();
+            if (status !== 'granted') {
+                alert('Bạn cần cấp quyền thông báo để tính năng này hoạt động!');
                 return;
             }
+
             const registration = await navigator.serviceWorker.ready;
+            
+            // Unsubscribe existing to be safe and refresh everything
+            const existingSub = await registration.pushManager.getSubscription();
+            if (existingSub) {
+                await existingSub.unsubscribe();
+            }
+
+            const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+            if (!vapidKey) {
+                console.error('VAPID Key missing in env');
+                return;
+            }
+
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.trim())
+                applicationServerKey: urlBase64ToUint8Array(vapidKey.trim())
             });
+
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                await supabase.from('push_subscriptions').upsert({
+                // Remove all old versions for this browser to avoid duplicates
+                await supabase.from('push_subscriptions')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('user_agent', navigator.userAgent);
+
+                // Add the new fresh one
+                await supabase.from('push_subscriptions').insert({
                     user_id: user.id,
                     subscription: sub,
                     user_agent: navigator.userAgent
-                }, { onConflict: 'user_id, user_agent' });
+                });
             }
+
             setIsSubscribed(true);
-            alert('Đã bật thông báo thành công!');
-        } catch (error) {
-            console.error('Subscription failed:', error);
-            alert('Không thể bật thông báo.');
+            alert('Đã bật thông báo thành công! Bạn sẽ nhận được thông báo thử nghiệm ngay bây giờ.');
+            
+            // Trigger a quick test notification for just this user
+            if (user) {
+                fetch('/api/notifications/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userIds: [user.id],
+                        title: '🔔 Đã kết nối!',
+                        body: 'Hệ thống thông báo ManHub đã sẵn sàng trên thiết bị này.'
+                    })
+                });
+            }
+        } catch (error: any) {
+            console.error('Push Subscription Error:', error);
+            alert('Lỗi: ' + error.message);
         }
     };
 

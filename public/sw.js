@@ -1,28 +1,38 @@
 self.addEventListener('push', function (event) {
-    console.log('Push received:', event.data ? event.data.text() : 'No data');
-    if (event.data) {
-        const data = event.data.json();
-        console.log('Push data:', data);
-        const options = {
-            body: data.body,
-            icon: '/icon.png',
-            badge: '/icon.png',
-            vibrate: [200, 100, 200],
-            tag: 'manhub-notification', // Overwrite old if same tag
-            renotify: true, // Vibrate even if old one visible
-            data: {
-                url: data.data?.url || '/',
-                dateOfArrival: Date.now(),
-            },
-            actions: [
-                {
-                    action: 'explore',
-                    title: 'Xem ngay',
-                }
-            ]
-        };
-        event.waitUntil(self.registration.showNotification(data.title, options));
+    console.log('[SW] Push received:', event.data ? event.data.text() : 'No data');
+    
+    let data = { title: 'Thông báo mới', body: 'Bạn có một cập nhật mới từ ManHub.' };
+    
+    try {
+        if (event.data) {
+            data = event.data.json();
+            console.log('[SW] Push data decoded:', data);
+        }
+    } catch (e) {
+        console.warn('[SW] Push data was not JSON, using text:', event.data?.text());
+        data.body = event.data?.text() || data.body;
     }
+
+    const options = {
+        body: data.body,
+        icon: data.icon || '/icon.png',
+        badge: '/icon.png',
+        vibrate: [200, 100, 200],
+        tag: 'manhub-notification', // Overwrite old if same tag
+        renotify: true,
+        data: {
+            url: data.data?.url || '/',
+            dateOfArrival: Date.now(),
+        },
+        actions: [
+            {
+                action: 'explore',
+                title: 'Xem ngay',
+            }
+        ]
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 self.addEventListener('notificationclick', function (event) {
