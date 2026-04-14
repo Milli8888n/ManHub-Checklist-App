@@ -1,28 +1,28 @@
 
 const axios = require('axios');
 
-async function testAll() {
+async function testNotificationAll() {
     const prodUrl = 'https://manhub-checklist-app.vercel.app/api/notifications/send';
     
-    // Gửi cho Admin
-    try {
-        const resAdmin = await axios.post(prodUrl, {
-            role: 'admin',
-            title: 'Admin Verification 👑',
-            body: 'Kiểm tra thông báo quyền Admin'
-        });
-        console.log('Admin res:', resAdmin.data);
-    } catch (e) { console.error('Admin error'); }
+    // Lấy danh sách ID từ DB (đã truy vấn ở bước trước)
+    const userIds = [
+        '0491722d-77c4-4b44-9aff-ae2c8d29aeca',
+        '2d627084-5415-4338-891d-134245d4c6fe',
+        'a78dc7ab-8889-40fc-a1ce-544f44e79c47'
+    ];
 
-    // Gửi cho Staff
+    console.log(`Bắn thông báo tới ${userIds.length} người dùng trên Production...`);
+    
     try {
-        const resStaff = await axios.post(prodUrl, {
-            role: 'staff',
-            title: 'Staff Verification 👷',
-            body: 'Kiểm tra thông báo quyền Nhân viên'
+        const response = await axios.post(prodUrl, {
+            userIds: userIds,
+            title: '📢 Thông báo hệ thống ManHub',
+            body: 'Chúng tôi vừa cập nhật tính năng thông báo mới. Chúc mọi người làm việc hiệu quả!'
         });
-        console.log('Staff res:', resStaff.data);
-    } catch (e) { console.error('Staff error'); }
+        console.log('Phản hồi từ Server:', response.data);
+    } catch (error) {
+        console.error('Lỗi khi gửi:', error.response ? error.response.data : error.message);
+    }
 }
 
-testAll();
+testNotificationAll();

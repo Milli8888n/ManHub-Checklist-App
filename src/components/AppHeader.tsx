@@ -1,4 +1,5 @@
 'use client';
+// Version: 1.1.0 - Auto-Notification Fix
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';

@@ -7,9 +7,9 @@ async function testNotificationProduction() {
     
     try {
         const response = await axios.post(prodUrl, {
-            role: 'admin',
-            title: 'Production Test Notification 🚢',
-            body: 'Thông báo từ hệ thống Production đang hoạt động!'
+            userIds: ['0491722d-77c4-4b44-9aff-ae2c8d29aeca'], // ID của bạn (Hoàng Thiện Tâm)
+            title: '🚀 Production Live Test',
+            body: 'Thông báo Push đa kênh từ ManHub Production.'
         });
         console.log('Production Response:', response.data);
     } catch (error) {
